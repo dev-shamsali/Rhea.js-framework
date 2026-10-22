@@ -40,6 +40,7 @@ jobs:
   audit:
     name: npm audit (repository, node ${{ matrix.node }})
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
@@ -60,6 +61,7 @@ jobs:
   generated-projects:
     name: generated projects audit clean (node ${{ matrix.node }}, npm ${{ matrix.npm }})
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:

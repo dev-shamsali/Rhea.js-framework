@@ -30,6 +30,7 @@ const sh = (cmd: string, args: string[], cwd: string, extra: NodeJS.ProcessEnv =
     shell: win && (cmd === "npm" || cmd === "git"),
     env: { ...process.env, ...extra },
     maxBuffer: 64 * 1024 * 1024,
+    timeout: 280_000,
   });
 const npm = (args: string[], cwd: string) => sh("npm", args, cwd);
 const git = (args: string[], cwd: string) => sh("git", args, cwd);
@@ -208,7 +209,17 @@ describe.each([
       expect((await fetch(`http://127.0.0.1:${port}/api/rhea`)).status).toBe(200);
     } finally {
       if (win) spawnSync("taskkill", ["/pid", String(child.pid), "/t", "/f"]);
-      else if (child.pid) process.kill(-child.pid, "SIGTERM");
+      else if (child.pid) {
+        try {
+          process.kill(-child.pid, "SIGKILL");
+        } catch {
+          /* already gone */
+        }
+      }
+      // A surviving grandchild would keep these pipes open and stop the test run from ever exiting.
+      child.stdout.destroy();
+      child.stderr.destroy();
+      child.unref();
     }
   }, 60_000);
 });

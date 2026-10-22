@@ -1,6 +1,6 @@
 {
   "name": "@rheajs/docs",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "private": true,
   "description": "Rhea.js documentation site generator. Made by Shams Ali Shaikh.",
   "type": "module",

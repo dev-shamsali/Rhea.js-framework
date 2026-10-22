@@ -4,6 +4,8 @@ All notable changes are documented here. Format: [Keep a Changelog](https://keep
 
 ## [Unreleased]
 
+## [1.0.2]
+
 ### Security
 
 - Generated projects and this repository now report **0** from `npm audit`, development dependencies included (before: 6 in a new project, 3 in the repository).
