@@ -34,7 +34,7 @@ Use `parseEnv(shape, source)` instead of `loadEnv` when you want the error throw
 
 ## .env files
 
-`npm run dev` (nodemon) passes `.env` to Node with `--env-file`. `npm start` does not load any file: provide real environment variables, as you would in production. For a local production-style run use `npm run start:env`, or `rhea start --env-file <path>`. Keep `.env` out of git; the generated `.gitignore` already does. `.env.example` lists every variable with placeholders and is safe to commit.
+`npm run dev` passes `.env` to Node with `--env-file`. `npm start` does not load any file: provide real environment variables, as you would in production. For a local production-style run use `npm run start:env`, or `rhea start --env-file <path>`. Keep `.env` out of git; the generated `.gitignore` already does. `.env.example` lists every variable with placeholders and is safe to commit.
 
 ## createApp options
 

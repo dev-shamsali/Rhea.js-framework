@@ -21,8 +21,8 @@ In cookie mode the browser must send an `Origin` header that is listed in `CORS_
 **`429 ACCOUNT_LOCKED`.**
 Five wrong passwords lock an account for 15 minutes. It unlocks by itself; `Retry-After` says how many seconds remain. To unlock now, set `failedLogins` to 0 and `lockedUntil` to null on the user.
 
-**`npm audit` reports vitest advisories in a generated project.**
-Generated projects pin Vitest 4.0.x. `npm audit` flags it and `@vitest/mocker`, because the fix (Vitest 4.1.11) crashes npm 10, which Node.js 20 ships. `npm audit --omit=dev` is clean. The advisories affect Vitest only when its UI server runs or a test uses a redirecting mock from untrusted input. On Node.js 22.12 or newer you can upgrade Vitest. Details: [SECURITY_AUDIT.md](https://github.com/dev-shamsali/Rhea.js-framework/blob/main/SECURITY_AUDIT.md).
+**`npm audit` reports vulnerabilities in a generated project.**
+A freshly generated project audits clean (`npm audit` finds 0, development dependencies included). If yours does not, an advisory was published after your lockfile was written. Run `npm update`, then `npm audit` again. Do not run `npm audit fix --force`: it can downgrade packages (for example to a years-old tool) and add more vulnerabilities than it removes. If an advisory has no fix yet, report it at the Security tab of the repository.
 
 **`Cannot find "tsx" in this project. Run "npm install" first.`**
 Dependencies are not installed. Run `npm install`. The same message appears for `typescript` and `vitest`.
@@ -51,11 +51,17 @@ Set `trustProxy` to the number of proxies. See [Security](security.html).
 **429 in tests.**
 Rate limiting is off in the `test` environment unless you pass `rateLimit` explicitly.
 
-**npm warns that `esbuild` install scripts were skipped (npm 11+).**
-`tsx` depends on esbuild, which ships its binary through platform packages, so `rhea dev` and tests still worked when this was checked on Linux. If esbuild fails to run, approve its script with the command npm prints.
+**npm 12 warns that `esbuild` install scripts were blocked.**
+npm 12 does not run dependency install scripts that `package.json` does not allow. Generated TypeScript projects already contain `"allowScripts": { "esbuild": true }`, so you should not see this. A project created before 1.0.2 does not: run `npm install-scripts approve esbuild` and commit the change to `package.json`. Do not use `--dangerously-allow-all-scripts`. `npm install-scripts ls` lists every package whose script is not yet reviewed.
 
 **`npm install` fails with `Cannot read properties of null (reading 'edgesOut')`.**
-Reproduced on npm 10.8 and 10.9 when the project uses `vitest` 4.1.x. Generated projects pin `vitest` and `@vitest/coverage-v8` to `~4.0.18`, which installs cleanly. If you upgraded Vitest and hit this, pin it back or upgrade npm.
+This is an npm 10 bug that Vitest 4.1.x triggers (it declares `vite` as both a dependency and a peer). Generated projects use Vitest 5, which installs cleanly on npm 10, 11 and 12. If a project still pins `vitest` to `4.1.x`, move it to `~5.0.5` (needs Node.js 22.12 or newer) and keep `@vitest/coverage-v8` on the same version.
+
+**`npm warn EBADENGINE` or `Unsupported engine` for `vitest`, `vite` or `eslint`.**
+The project runs on Node.js older than 22.13. Upgrade Node.js. Node.js 20 and 23 are not supported by the current test tooling.
+
+**`npm run dev` does not restart after I edit `.env`.**
+`tsx watch` and `node --watch` restart on source changes only. Stop the server and start it again after changing `.env`.
 
 **Startup fails with `Could not connect to MongoDB` or `Could not connect to MySQL`.**
 The database is not reachable at `DATABASE_URL`. Start one (the `create` summary prints a `docker run` one-liner), or fix the URL. The app deliberately refuses to start without its database.

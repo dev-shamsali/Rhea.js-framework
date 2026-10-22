@@ -6,20 +6,28 @@ Scope: `@rheajs/core`, `@rheajs/auth`, the `rhea` CLI and the generated project 
 
 ## Findings
 
-| #   | Finding                                                                                                                                                                                        | Severity | Status                                                                       |
-| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ---------------------------------------------------------------------------- |
-| 1   | The prototype-pollution guard stopped inspecting at depth 32 and returned "clean". A body with `__proto__` below level 32 was accepted (HTTP 200).                                             | Medium   | **Fixed.** Bodies nested deeper than 32 levels are now rejected with 400.    |
-| 2   | Log redaction used one-level wildcards (`*.password`), so a secret nested two or more levels down was logged in clear text. `jwt`, `idToken`, `clientSecret` and `privateKey` were not listed. | Medium   | **Fixed.** Sensitive keys are redacted at nesting levels 1 to 4. Keys added. |
-| 3   | `rhea generate module con` created a folder named after a Windows device name that Windows cannot create.                                                                                      | Low      | **Fixed.** Windows device names are refused.                                 |
-| 4   | A flaky shutdown test (fixed 30 ms wait) failed under CPU load.                                                                                                                                | Test     | **Fixed.** It now waits for the handler to start.                            |
-| 5   | `npm audit` on generated projects and on this repository reports advisories in `vitest` and `@vitest/mocker` (dev dependencies only).                                                          | Low      | **Open, accepted, documented.** See below.                                   |
-| 6   | `autocannon` (benchmark tool, dev only) pulled a vulnerable `uuid`.                                                                                                                            | Low      | **Fixed** with an `overrides` entry (`uuid` 11.1.1).                         |
+| #   | Finding                                                                                                                                                                                                               | Severity | Status                                                                       |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ---------------------------------------------------------------------------- |
+| 1   | The prototype-pollution guard stopped inspecting at depth 32 and returned "clean". A body with `__proto__` below level 32 was accepted (HTTP 200).                                                                    | Medium   | **Fixed.** Bodies nested deeper than 32 levels are now rejected with 400.    |
+| 2   | Log redaction used one-level wildcards (`*.password`), so a secret nested two or more levels down was logged in clear text. `jwt`, `idToken`, `clientSecret` and `privateKey` were not listed.                        | Medium   | **Fixed.** Sensitive keys are redacted at nesting levels 1 to 4. Keys added. |
+| 3   | `rhea generate module con` created a folder named after a Windows device name that Windows cannot create.                                                                                                             | Low      | **Fixed.** Windows device names are refused.                                 |
+| 4   | A flaky shutdown test (fixed 30 ms wait) failed under CPU load.                                                                                                                                                       | Test     | **Fixed.** It now waits for the handler to start.                            |
+| 5   | `npm audit` on generated projects and on this repository reported advisories in `vitest` and `@vitest/mocker`, and generated projects pulled a vulnerable `braces` through `nodemon`; `eslint` 9.39.5 was deprecated. | Low      | **Fixed** (1.0.2). See below.                                                |
+| 6   | `autocannon` (benchmark tool, dev only) pulled a vulnerable `uuid`.                                                                                                                                                   | Low      | **Fixed** with an `overrides` entry (`uuid` 11.1.1).                         |
 
-### About finding 5
+### About finding 5 (fixed in 1.0.2)
 
-- Production dependencies: `npm audit --omit=dev` reports **0 vulnerabilities** in this repository and in generated projects.
-- The remaining advisories affect Vitest only when its UI server is running (GHSA-5xrq-8626-4rwp) or when a test uses a redirecting mock from untrusted input (GHSA-82fw-gwwq-j7x9). Generated projects use neither.
-- The fix is Vitest 4.1.11. It cannot be used yet: it crashes npm 10 (`Cannot read properties of null (reading 'edgesOut')`), and npm 10 is what Node.js 20 ships. Re-tested on 2026-10-10. Vitest 5 needs Node.js 22.12 or newer. The pin stays at `~4.0.18` until npm 10 works with a fixed release, or Node.js 20 support is dropped.
+- Vitest and `@vitest/coverage-v8` moved to `~5.0.5`, which contains the fix for GHSA-82fw-gwwq-j7x9 and GHSA-qxg6-89mg-rqv8. The first fixed 4.x line (4.1.x) crashes npm 10 (`Cannot read properties of null (reading 'edgesOut')`, reproduced on npm 10.9.9), so the fix is Vitest 5. It needs Node.js 22.12 or newer; Node.js 20 is end of life and was dropped from the tested set.
+- `nodemon` was removed. Its newest release still depends on `chokidar` 3, which depends on `braces` (GHSA-vfj7-8cjw-p6xm, no fixed version). `npm audit fix --force` "fixed" this by installing `nodemon` 1.14.10, which raised the count from 6 to 19. `npm run dev` now uses `tsx watch` (TypeScript) or `node --watch` (JavaScript).
+- ESLint moved to 10.13 (9.39.5 is deprecated and no longer supported) together with `@eslint/js` 10 and `typescript-eslint` 8.72.
+- The only override left is `uuid` 11.1.1 for `hyperid` (via `autocannon`, the benchmark tool, dev only). `hyperid` uses only `uuid.v4`, whose API is identical in 11, and `npm run bench`/`soak` ran with it. It is not hiding a finding: without it `npm audit` reports GHSA-w5hq-g745-h8pq.
+- Evidence (2026-10-22, npm 12.1.0, Node.js 26.10): `npm audit --audit-level=low` reports **0 vulnerabilities** for the monorepo, for each workspace (`npm run audit:all`), for the packed `@rheajs/core`, `@rheajs/auth`, `@rheajs/cli` and `create-rhea` tarballs, and for 14 generated projects (TypeScript and JavaScript, ESM and CommonJS, no database, MongoDB, MySQL, and two with authentication). `npm run test:security` repeats this with the real `npm audit` and fails on any finding.
+
+### Dependency policy
+
+- CI runs `npm audit --audit-level=low` (all dependencies and production only), `npm audit signatures`, and the generated-project audit on every pull request, on every release, and once a day. A newly disclosed advisory turns the daily run red.
+- Fixes are made in the dependency graph (upgrade, replace or remove). No audit suppression file, `--audit-level` relaxation or `npm audit fix --force` is used. An `overrides` entry is allowed only when the overriding version is API compatible with its consumer, and it must be explained in this file.
+- Dependabot opens weekly update pull requests. The security-update PRs are merged first, followed by a patch release.
 
 ## Probed and held
 

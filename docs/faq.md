@@ -10,7 +10,7 @@
 
 **Which databases are supported?** `create` can set up MongoDB (official driver) or MySQL (`mysql2`) with pooling, a readiness endpoint and clean shutdown. Core itself is database-agnostic and there is no ORM. See [Databases](databases.html).
 
-**Can I use JavaScript instead of TypeScript?** Yes. `create` asks for TypeScript or JavaScript, and for ES Modules or CommonJS. Generators follow your choice. Both CommonJS and ESM JavaScript projects are tested on Node.js 20, 22 and later in this repository.
+**Can I use JavaScript instead of TypeScript?** Yes. `create` asks for TypeScript or JavaScript, and for ES Modules or CommonJS. Generators follow your choice. Both CommonJS and ESM JavaScript projects are tested on Node.js 22 and 24 in this repository.
 
 **Why is `rhea` not the npm package name?** The name `rhea` on npm is an unrelated existing package. Rhea.js publishes under different names (`@rheajs/*`, `create-rhea`). Check the repository for the final names.
 

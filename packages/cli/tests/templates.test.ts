@@ -70,13 +70,19 @@ describe("project template matrix (12 combinations)", () => {
     const f = gen(c);
     const ext = c.language === "ts" ? "ts" : "js";
     const pkg = JSON.parse(f["package.json"]!);
-    // scripts: nodemon for dev, plain node for start, vitest for tests
-    expect(pkg.scripts.dev).toBe("nodemon");
+    // scripts: tsx watch / node --watch for dev, plain node for start, vitest for tests
+    expect(pkg.scripts.dev).toBe(c.language === "ts" ? "tsx watch --env-file=.env src/server.ts" : "node --watch --env-file=.env src/server.js");
+    expect(f["nodemon.json"]).toBeUndefined();
     expect(pkg.scripts.start).toBe(c.language === "ts" ? "node dist/server.js" : "node src/server.js");
     expect(pkg.scripts.test).toBe("vitest run");
     expect(pkg.type).toBe(c.module === "esm" ? "module" : "commonjs");
-    expect(pkg.engines.node).toBe(">=20.19.0");
-    expect(pkg.devDependencies.nodemon).toBeTruthy();
+    expect(pkg.engines.node).toBe(">=22.13.0");
+    expect(pkg.devDependencies.nodemon).toBeUndefined();
+    expect(pkg.allowScripts).toEqual(c.language === "ts" ? { esbuild: true } : undefined);
+    // patched, supported lines only: vitest and its coverage provider move together, eslint is the supported 10.x
+    expect(pkg.devDependencies.vitest).toBe(pkg.devDependencies["@vitest/coverage-v8"]);
+    expect(pkg.devDependencies.vitest).toBe("~5.0.5");
+    expect(pkg.devDependencies.eslint).toBe("^10.13.0");
     expect(Boolean(pkg.scripts.build)).toBe(c.language === "ts");
     // database dependency only when selected, never both
     expect(Boolean(pkg.dependencies.mongodb)).toBe(c.database === "mongodb");

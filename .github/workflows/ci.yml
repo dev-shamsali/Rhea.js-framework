@@ -3,6 +3,9 @@ on:
   push:
     branches: [main, develop]
   pull_request:
+  # Newly disclosed advisories appear without any code change, so the audit also runs every day.
+  schedule:
+    - cron: "17 5 * * *"
 permissions:
   contents: read
 concurrency:
@@ -10,13 +13,15 @@ concurrency:
   cancel-in-progress: true
 jobs:
   verify:
+    # The scheduled run only audits (job "audit" below).
+    if: github.event_name != 'schedule'
     name: ${{ matrix.os }} / node ${{ matrix.node }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        node: [20, 22, 24]
+        node: [22, 24]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -31,8 +36,50 @@ jobs:
       - run: npm test
       - run: npm run test:e2e
 
+  # Zero known vulnerabilities, development dependencies included. Any advisory fails the build. Nothing is suppressed.
+  audit:
+    name: npm audit (repository, node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [22, 24]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - run: npm ci
+      - run: npm audit --audit-level=low
+      - run: npm audit --omit=dev --audit-level=low
+      - run: npm run audit:all
+      - run: npm audit signatures
+
+  # Generates real projects with the CLI, installs them from the registry in a clean directory, and audits each one on its own.
+  generated-projects:
+    name: generated projects audit clean (node ${{ matrix.node }}, npm ${{ matrix.npm }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { node: 22, npm: "10" }
+          - { node: 24, npm: "11" }
+          - { node: 26, npm: "12" }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - run: npm install -g npm@${{ matrix.npm }}
+      - run: npm ci
+      - run: npm run test:security
+
   site:
     name: docs and website build
+    if: github.event_name != 'schedule'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

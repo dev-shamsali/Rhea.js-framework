@@ -1,6 +1,8 @@
 # Installation
 
-Requirements: Node.js 20.19 or newer and npm 10 or newer. (Generated projects use tooling that needs 20.19+. CommonJS projects rely on Node loading the ES-module build of `@rheajs/core` through `require()`, which is on by default from 20.19.)
+Requirements: Node.js 22.13 or newer (22 LTS, 24 or 26) and npm 10 or newer. Generated projects use Vitest 5, ESLint 10 and Vite 8, which need Node.js 22.12/22.13 or newer; Node.js 20 reached end of life in April 2026. The runtime packages (`@rheajs/core`, `@rheajs/auth`) still declare `node >=20`, but only Node.js 22 and 24 are tested. npm 10, 11 and 12 are tested.
+
+**Install scripts (npm 12).** npm 12 blocks dependency install scripts unless `package.json` lists them in `allowScripts`. TypeScript projects need one: esbuild (a dependency of `tsx`) installs its platform binary in a postinstall script. The generated `package.json` already contains `"allowScripts": { "esbuild": true }`, so `npm install` and `npm ci` work without a prompt and without changing any global setting. Older npm versions ignore the field. Review the list at any time with `npm install-scripts ls`.
 
 > Rhea.js 1.x is published to npm. Semantic versioning applies: see [Stability and versioning](introduction.html#stability-and-versioning).
 

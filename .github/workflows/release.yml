@@ -26,6 +26,8 @@ jobs:
       - run: npm run build:website
       - run: npm test
       - run: npm run test:e2e
+      - run: npm audit --audit-level=low
+      - run: npm run test:security
       - run: node scripts/check-release.mjs --strict ${{ github.ref_type == 'tag' && format('--tag {0}', github.ref_name) || '' }}
 
   publish:

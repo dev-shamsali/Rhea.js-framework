@@ -36,6 +36,10 @@ In scope: the code in this repository (`@rheajs/core`, `@rheajs/cli`, `create-rh
 
 Out of scope: vulnerabilities in third-party dependencies that have no Rhea.js-specific impact (report those upstream), applications built with Rhea.js, and denial of service through unrealistic resource use.
 
+## Dependencies
+
+CI audits this repository and freshly generated projects with `npm audit` on every pull request, on every release and daily. The build fails on any vulnerability, development dependencies included. When an advisory is published, the maintainer upgrades or replaces the affected package and ships a patch release. See "Dependency policy" in [SECURITY_AUDIT.md](SECURITY_AUDIT.md). Run `npm audit` in your own project regularly: a lockfile is a snapshot and new advisories appear over time.
+
 ## What Rhea.js does not claim
 
 `rhea security` is a static check, not a penetration test or audit. Security defaults reduce common mistakes and do not guarantee a secure application.

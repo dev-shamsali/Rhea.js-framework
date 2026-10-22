@@ -8,14 +8,15 @@ import { readProjectOptions } from "./generate.js";
 
 const envFile = (cwd: string, explicit?: string) => (explicit ? [`--env-file=${explicit}`] : existsSync(join(cwd, ".env")) ? ["--env-file=.env"] : []);
 
-/** Same as `npm run dev`: nodemon with the project's nodemon.json. Projects from older alpha releases fall back to tsx watch. */
+/** Same as `npm run dev`: tsx watch (TypeScript) or node --watch (JavaScript). Projects that still have a nodemon.json keep using nodemon. */
 export async function dev(): Promise<number> {
   const cwd = process.cwd();
   requireProject(cwd);
   const env = { NODE_ENV: process.env["NODE_ENV"] ?? "development" };
   if (existsSync(join(cwd, "nodemon.json"))) return runNode([resolveBin(cwd, "nodemon")], { cwd, env });
-  if (!existsSync(join(cwd, "src/server.ts"))) throw new CliError("src/server.ts not found.");
-  return runNode([resolveBin(cwd, "tsx"), "watch", ...envFile(cwd), "src/server.ts"], { cwd, env });
+  if (existsSync(join(cwd, "src/server.ts"))) return runNode([resolveBin(cwd, "tsx"), "watch", ...envFile(cwd), "src/server.ts"], { cwd, env });
+  if (existsSync(join(cwd, "src/server.js"))) return runNode(["--watch", ...envFile(cwd), "src/server.js"], { cwd, env });
+  throw new CliError("src/server.ts or src/server.js not found.");
 }
 
 export async function build(): Promise<number> {

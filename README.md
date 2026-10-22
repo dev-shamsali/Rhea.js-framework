@@ -16,20 +16,20 @@ Website: https://rhea.devcodehub.cloud · Docs: https://rhea.devcodehub.cloud/do
 npx create-rhea my-api    # asks: TypeScript or JavaScript, ESM or CommonJS, MongoDB / MySQL / none
 cd my-api
 npm install
-npm run dev               # nodemon, then open http://localhost:5000/api/rhea
+npm run dev               # watch mode, then open http://localhost:5000/api/rhea
 npx rhea generate module users
 npm test
 npm run build && npm start
 ```
 
-Requires Node.js 20.19 or newer (generated projects use Vite 7 through Vitest).
+Requires Node.js 22.13 or newer and npm 10 or newer (generated projects use Vitest 5, ESLint 10 and Vite 8).
 
 ## What is in the box
 
 - `createApp()`: request IDs, request logging with secret redaction, Helmet, CORS (denied by default), rate limiting, body size limit, request timeout, prototype-pollution guard, standard error and response shapes, lifecycle hooks, graceful shutdown, plugin API.
 - Zod validation for body, query and params, and Zod environment validation that stops startup on bad config.
 - `rhea` CLI: `create`, `dev`, `build`, `start`, `generate`, `test`, `doctor`, `security`, `docker`, `info`.
-- Generated projects in TypeScript or JavaScript, ES Modules or CommonJS, with optional MongoDB or MySQL (pooled connection, readiness endpoint, clean shutdown), a working first API and nodemon for development.
+- Generated projects in TypeScript or JavaScript, ES Modules or CommonJS, with optional MongoDB or MySQL (pooled connection, readiness endpoint, clean shutdown), a working first API and a watch-mode dev server.
 
 ## Packages
 

@@ -14,7 +14,7 @@ my-api/
 │   └── server.ts              starts the server and prints the banner
 ├── tests/integration/
 ├── .env  .env.example  .gitignore  .gitattributes
-├── nodemon.json  rhea.config.json
+├── rhea.config.json
 ├── eslint.config.mjs  prettier.config.mjs  vitest.config.ts
 ├── tsconfig.json  tsconfig.build.json     TypeScript only
 ├── .github/workflows/ci.yml

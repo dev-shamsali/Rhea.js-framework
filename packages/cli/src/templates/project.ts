@@ -12,20 +12,27 @@ export interface ProjectInput extends ProjectOptions {
   authSpec?: string;
 }
 
-/** Third-party versions written into generated projects. Chosen for Node 20.19+ support (see docs/troubleshooting). */
+/** Third-party versions written into generated projects. Chosen to be patched (npm audit clean) and to install on npm 10 (see docs/troubleshooting). */
 const V = {
-  nodemon: "^3.1.14",
-  vitest: "~4.0.18",
+  vitest: "~5.0.5",
   supertest: "^7.3.1",
-  eslint: "^9.39.5",
+  eslint: "^10.13.0",
+  eslintJs: "^10.0.1",
   prettier: "^3.9.9",
   typescript: "~5.9.3",
   tsx: "^4.23.15",
-  tseslint: "^8.71.1",
+  tseslint: "^8.72.0",
   globals: "^17.13.0",
   mongodb: "^7.7.0",
   mysql2: "^3.24.5",
 };
+
+/**
+ * npm 12 blocks dependency install scripts unless package.json allows them. TypeScript projects run through tsx, which depends on esbuild;
+ * esbuild has one postinstall that verifies and installs its platform binary. It is the only script a generated project needs.
+ * JavaScript projects have no dependency with an install script. Older npm versions ignore this field.
+ */
+const ALLOW_SCRIPTS = { esbuild: true };
 
 /** Placeholder the generated vitest config uses so tests can import the env module. Never a real secret. */
 const TEST_ONLY = "test-only-value-";
@@ -43,11 +50,10 @@ function packageJson(i: ProjectInput, s: Syntax): string {
   if (i.database === "mongodb") dependencies["mongodb"] = V.mongodb;
   if (i.database === "mysql") dependencies["mysql2"] = V.mysql2;
   const dev: Record<string, string> = {
-    "@eslint/js": V.eslint,
+    "@eslint/js": V.eslintJs,
     "@rheajs/cli": i.cliSpec,
     "@vitest/coverage-v8": V.vitest,
     eslint: V.eslint,
-    nodemon: V.nodemon,
     prettier: V.prettier,
     supertest: V.supertest,
     vitest: V.vitest,
@@ -59,7 +65,7 @@ function packageJson(i: ProjectInput, s: Syntax): string {
 
   const entry = s.ts ? "dist/server.js" : "src/server.js";
   const scripts: Record<string, string> = {
-    dev: "nodemon",
+    dev: s.ts ? "tsx watch --env-file=.env src/server.ts" : "node --watch --env-file=.env src/server.js",
     ...(s.ts ? { build: "rhea build" } : {}),
     start: `node ${entry}`,
     "start:env": `node --env-file=.env ${entry}`,
@@ -82,7 +88,8 @@ function packageJson(i: ProjectInput, s: Syntax): string {
         description: `${i.name}: a ${LABEL.language[i.language]} API built with Rhea.js`,
         type: i.module === "esm" ? "module" : "commonjs",
         main: entry,
-        engines: { node: ">=20.19.0" },
+        engines: { node: ">=22.13.0" },
+        ...(s.ts ? { allowScripts: ALLOW_SCRIPTS } : {}),
         scripts,
         dependencies: sorted(dependencies),
         devDependencies: sorted(dev),
@@ -92,15 +99,6 @@ function packageJson(i: ProjectInput, s: Syntax): string {
     ) + "\n"
   );
 }
-
-const nodemonJson = (s: Syntax): string =>
-  JSON.stringify(
-    s.ts
-      ? { watch: ["src", ".env"], ext: "ts,json", ignore: ["**/*.test.ts"], exec: "tsx --env-file=.env src/server.ts", signal: "SIGTERM", delay: 200 }
-      : { watch: ["src", ".env"], ext: "js,mjs,cjs,json", ignore: ["**/*.test.js"], exec: "node --env-file=.env src/server.js", signal: "SIGTERM", delay: 200 },
-    null,
-    2,
-  ) + "\n";
 
 function tsconfigs(): Files {
   return {
@@ -218,7 +216,7 @@ ${LABEL.language[i.language]} + ${LABEL.module[i.module]}${i.database === "none"
 
 \`\`\`bash
 npm install
-npm run dev      # nodemon, restarts on file changes
+npm run dev      # restarts on file changes
 \`\`\`
 
 Open http://localhost:5000/api/rhea, your first API. Then:
@@ -235,7 +233,7 @@ npx rhea security
 
 | Script | What it does |
 | --- | --- |
-| \`npm run dev\` | nodemon with ${s.ts ? "tsx" : "node"}, loads \`.env\` |
+| \`npm run dev\` | ${s.ts ? "`tsx watch`" : "`node --watch`"}, loads \`.env\` |
 | \`npm start\` | \`node ${s.ts ? "dist/server.js" : "src/server.js"}\` (no \`.env\` loading: set real environment variables) |
 | \`npm run start:env\` | same, loading \`.env\` (handy locally) |
 | \`npm test\` | run tests once |
@@ -387,7 +385,6 @@ export function projectFiles(i: ProjectInput): Files {
   const files: Files = {
     "package.json": packageJson(i, s),
     [CONFIG_FILE]: configJson(i),
-    "nodemon.json": nodemonJson(s),
     [s.ts ? "vitest.config.ts" : "vitest.config.mjs"]: vitestConfig(i),
     "eslint.config.mjs": eslintConfig(s),
     "prettier.config.mjs": `export default { printWidth: 100, singleQuote: false, trailingComma: "all" };\n`,

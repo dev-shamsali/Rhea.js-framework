@@ -9,7 +9,7 @@ Made by Shams Ali Shaikh. MIT licensed.
 ## What you get
 
 - A project generator that asks for TypeScript or JavaScript, ES Modules or CommonJS, and MongoDB, MySQL or no database, and a `rhea` CLI (`create`, `dev`, `build`, `start`, `generate`, `test`, `doctor`, `security`, `docker`, `info`).
-- A working first API (`GET /api/rhea`) and a `dev` script with nodemon, so a new project runs and reloads on the first command.
+- A working first API (`GET /api/rhea`) and a `dev` script with watch mode, so a new project runs and reloads on the first command.
 - Secure defaults: Helmet headers, CORS denied unless configured, rate limiting, body size limit, request timeout, prototype-pollution guard.
 - One error model and one response shape across the app.
 - Zod-based validation for body, query and params, and Zod-based environment validation that stops startup on bad config.
@@ -26,7 +26,7 @@ Made by Shams Ali Shaikh. MIT licensed.
 ## Known limitations
 
 - Rate limiting counts in process memory by default, so limits are per process. For several instances pass a shared store such as `redisRateLimitStore` (see [Security](security.html)).
-- Verified on Linux with Node.js 20, 22 and 26 (npm 10 and 12). macOS and Windows are covered by the CI matrix but were not verified when this was written.
+- Verified on Linux with Node.js 22, 24 and 26 (npm 10, 11 and 12). macOS and Windows are covered by the CI matrix but were not verified when this was written.
 - `validate()` is synchronous: Zod schemas with async refinements are not supported.
 
 ## Stability and versioning

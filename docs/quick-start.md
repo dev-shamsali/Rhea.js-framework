@@ -36,7 +36,7 @@ Open `http://localhost:5000/api/rhea`. This is your first API:
 }
 ```
 
-`npm run dev` uses nodemon: edit a file and the server restarts, shutting down gracefully first.
+`npm run dev` watches your files (`tsx watch` or `node --watch`): edit a file and the server restarts, shutting down gracefully first.
 
 ## Add a resource
 

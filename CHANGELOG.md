@@ -4,6 +4,24 @@ All notable changes are documented here. Format: [Keep a Changelog](https://keep
 
 ## [Unreleased]
 
+### Security
+
+- Generated projects and this repository now report **0** from `npm audit`, development dependencies included (before: 6 in a new project, 3 in the repository).
+- Vitest and `@vitest/coverage-v8` moved to `~5.0.5`, fixing GHSA-82fw-gwwq-j7x9 and GHSA-qxg6-89mg-rqv8. Both are aligned in generated projects.
+- Removed `nodemon` from generated projects: it pulled a vulnerable `braces` through `chokidar` 3 and has no fixed release. `npm run dev` is now `tsx watch --env-file=.env src/server.ts` (TypeScript) or `node --watch --env-file=.env src/server.js` (JavaScript). `rhea dev` does the same, and still uses nodemon for older projects that have a `nodemon.json`.
+- ESLint 10.13, `@eslint/js` 10 and `typescript-eslint` 8.72 (ESLint 9.39.5 is deprecated).
+- TypeScript projects declare `"allowScripts": { "esbuild": true }`, so npm 12 runs the one install script they need and nothing else.
+
+### Changed
+
+- **Minimum Node.js for generated projects and development of this repository is 22.13** (was 20.19). Vitest 5, Vite 8 and ESLint 10 do not support Node.js 20, which is end of life; Vitest 4.1.x, the only fixed 4.x line, crashes npm 10. `@rheajs/core`, `@rheajs/auth` and `@rheajs/cli` still declare `node >=20`; only 22 and 24 are tested.
+- CI tests Node.js 22 and 24 (Node.js 20 removed). Required status checks named `... / node 20` no longer exist: update branch protection.
+
+### Added
+
+- `npm run test:security`: generates 14 real projects, installs them, runs the real `npm audit`, `npm ci` reproducibility, secret and git checks, and `npm run dev` health checks. `npm run audit:all` audits every workspace.
+- CI jobs `audit` and `generated-projects`, and a daily scheduled audit.
+
 ## [1.0.1]
 
 Fixes found by building a Next.js todo app against a generated API (cookie mode, in a real browser).

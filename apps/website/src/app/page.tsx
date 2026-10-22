@@ -173,7 +173,7 @@ await app.start(5000);`}</Code>
           </div>
           <p className="text-slate">
             Use the arrow keys and Enter, or pass flags to skip the questions. Your first API is already at <code>/api/rhea</code>, and <code>npm run dev</code>{" "}
-            restarts gracefully on every change through nodemon.
+            restarts gracefully on every change in watch mode.
           </p>
         </Section>
 
@@ -201,7 +201,7 @@ await app.start(5000);`}</Code>
 │   ├── app.ts               buildApp()
 │   └── server.ts
 ├── tests/integration/
-└── .env  .env.example  nodemon.json  rhea.config.json  vitest.config.ts`}</Code>
+└── .env  .env.example  rhea.config.json  vitest.config.ts`}</Code>
           <p>
             JavaScript projects use the same layout with <code>.js</code> files and no <code>tsconfig</code>.
           </p>

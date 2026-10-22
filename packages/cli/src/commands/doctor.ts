@@ -13,8 +13,8 @@ export function runDoctorChecks(cwd: string): Check[] {
   const add = (status: Check["status"], label: string, hint?: string) => checks.push({ status, label, ...(hint ? { hint } : {}) });
 
   const [major = 0, minor = 0] = process.versions.node.split(".").map(Number);
-  if (major > 20 || (major === 20 && minor >= 19)) add("ok", `Node.js ${process.versions.node}`);
-  else add("error", `Node.js ${process.versions.node}`, "Generated projects need Node.js 20.19 or newer.");
+  if (major > 22 || (major === 22 && minor >= 13)) add("ok", `Node.js ${process.versions.node}`);
+  else add("error", `Node.js ${process.versions.node}`, "Generated projects need Node.js 22.13 or newer.");
 
   const npmV = npm(["--version"], cwd, "pipe");
   if (npmV.status === 0) add("ok", `npm ${npmV.stdout.trim()}`);
