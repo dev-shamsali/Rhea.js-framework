@@ -45,7 +45,7 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "jose": "^6.2.0"
+    "jose": "^6.2.14"
   },
   "peerDependencies": {
     "@rheajs/core": "^1.0.0"
